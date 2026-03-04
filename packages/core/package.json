@@ -80,7 +80,7 @@
         "svgo": "^2.8.0",
         "terser-webpack-plugin": "^5.1.1",
         "typescript": "^5.0.0",
-        "webpack": "^5.81.0",
+        "webpack": "^5.105.4",
         "webpack-cli": "^5.1.4",
         "webpack-dev-middleware": "^7.4.2",
         "webpack-dev-server": "^5.2.1",

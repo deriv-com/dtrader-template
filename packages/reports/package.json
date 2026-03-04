@@ -64,7 +64,7 @@
         "stylelint-formatter-pretty": "^2.1.1",
         "svgo": "^2.8.0",
         "terser-webpack-plugin": "^5.1.1",
-        "webpack": "^5.81.0",
+        "webpack": "^5.105.4",
         "webpack-cli": "^5.1.4",
         "webpack-manifest-plugin": "^4.0.2",
         "webpack-node-externals": "^2.5.2"
