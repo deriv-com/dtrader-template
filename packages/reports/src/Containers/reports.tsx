@@ -6,7 +6,6 @@ import { getSelectedRoute } from '@deriv/shared';
 import { observer, useStore } from '@deriv/stores';
 import { useTranslations } from '@deriv-com/translations';
 import { useDevice } from '@deriv-com/ui';
-import { isAllowedRedirectDomain } from '@deriv/utils';
 
 import { TRoute } from 'Types';
 
@@ -16,6 +15,43 @@ type TReports = {
     history: RouteComponentProps['history'];
     location: RouteComponentProps['location'];
     routes: TRoute[];
+};
+
+// Security: Allowed domains for redirect functionality
+const ALLOWED_REDIRECT_DOMAINS = [
+    'deriv.com',
+    'deriv.be',
+    'deriv.me',
+    'app.deriv.com',
+    'app.deriv.be',
+    'app.deriv.me',
+    // Add other trusted Deriv domains as needed
+];
+
+// Security: Validate redirect URL to prevent open redirect attacks
+const isAllowedRedirectDomain = (url: string): boolean => {
+    try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname.toLowerCase();
+        
+        // Check if hostname exactly matches or is a subdomain of allowed domains
+        return ALLOWED_REDIRECT_DOMAINS.some(domain => 
+            hostname === domain || hostname.endsWith(`.${domain}`)
+        );
+    } catch {
+        return false;
+    }
+};
+
+// Security: Sanitize URL to prevent XSS attacks
+const sanitizeUrl = (url: string): string => {
+    // Remove any HTML tags and script content
+    return url.replace(/<[^>]*>/g, '')
+              .replace(/javascript:/gi, '')
+              .replace(/data:/gi, '')
+              .replace(/vbscript:/gi, '')
+              .replace(/file:/gi, '')
+              .replace(/blob:/gi, '');
 };
 
 const Reports = observer(({ history, location, routes }: TReports) => {
@@ -34,11 +70,59 @@ const Reports = observer(({ history, location, routes }: TReports) => {
     const analyticsCalledRef = React.useRef<boolean>(false);
 
     React.useEffect(() => {
-        // Capture redirect parameter on mount
+        // Security: Capture and validate redirect parameter on mount
         const urlParams = new URLSearchParams(location.search);
         const redirectUrl = urlParams.get('redirect');
         if (redirectUrl) {
-            redirectUrlRef.current = redirectUrl;
+            // Security: Sanitize the URL first
+            const sanitizedUrl = sanitizeUrl(redirectUrl);
+            
+            // Security: URL length validation (prevent DoS)
+            if (sanitizedUrl.length > 2048) {
+                console.warn('Security: Blocked excessively long redirect URL');
+                return;
+            }
+
+            try {
+                // Security: Decode URL multiple times to handle encoding attacks
+                let decodedUrl = sanitizedUrl;
+                let previousUrl = '';
+                let decodeAttempts = 0;
+                const MAX_DECODE_ATTEMPTS = 5;
+
+                while (decodedUrl !== previousUrl && decodedUrl.includes('%') && decodeAttempts < MAX_DECODE_ATTEMPTS) {
+                    previousUrl = decodedUrl;
+                    try {
+                        decodedUrl = decodeURIComponent(decodedUrl);
+                        decodeAttempts++;
+                    } catch {
+                        console.warn('Security: Blocked redirect URL with invalid encoding');
+                        return;
+                    }
+                }
+
+                // Security: Normalize and trim the URL
+                decodedUrl = decodedUrl.trim();
+
+                // Security: Handle protocol-relative URLs
+                if (decodedUrl.startsWith('//')) {
+                    decodedUrl = `https:${decodedUrl}`;
+                }
+
+                // Security: Add protocol if missing
+                if (!decodedUrl.startsWith('http://') && !decodedUrl.startsWith('https://')) {
+                    decodedUrl = `https://${decodedUrl}`;
+                }
+
+                // Security: Final validation against allowed domains
+                if (isAllowedRedirectDomain(decodedUrl)) {
+                    redirectUrlRef.current = decodedUrl;
+                } else {
+                    console.warn('Security: Blocked redirect to unauthorized domain');
+                }
+            } catch (error) {
+                console.warn('Security: Redirect validation error:', error instanceof Error ? error.message : 'Unknown error');
+            }
         }
     }, []); // Only run on mount
 
@@ -57,78 +141,13 @@ const Reports = observer(({ history, location, routes }: TReports) => {
     const onClickClose = () => {
         sessionStorage.removeItem('open_positions_filter');
 
-        // Check for stored redirect parameter
+        // Security: Check for validated redirect parameter
         if (redirectUrlRef.current) {
-            // If redirect parameter exists, navigate to that URL
-            try {
-                // URL length validation (prevent DoS)
-                if (redirectUrlRef.current.length > 2048) {
-                    // eslint-disable-next-line no-console
-                    console.error('Security: Blocked excessively long redirect URL');
-                    routeBackInApp(history);
-                    return;
-                }
-
-                // Decode URL multiple times to handle double/triple encoding attacks
-                let decodedUrl = redirectUrlRef.current;
-                let previousUrl = '';
-                let decodeAttempts = 0;
-                const MAX_DECODE_ATTEMPTS = 5;
-
-                while (decodedUrl !== previousUrl && decodedUrl.includes('%') && decodeAttempts < MAX_DECODE_ATTEMPTS) {
-                    previousUrl = decodedUrl;
-                    try {
-                        decodedUrl = decodeURIComponent(decodedUrl);
-                        decodeAttempts++;
-                    } catch {
-                        // Invalid encoding, reject
-                        // eslint-disable-next-line no-console
-                        console.error('Security: Blocked redirect URL with invalid encoding');
-                        routeBackInApp(history);
-                        return;
-                    }
-                }
-
-                // Normalize and trim the URL
-                decodedUrl = decodedUrl.trim();
-
-                // Block dangerous protocols (XSS protection)
-                const BLOCKED_PROTOCOLS = ['javascript:', 'data:', 'vbscript:', 'file:', 'blob:'];
-                const safeUrl = decodedUrl.toLowerCase();
-
-                if (BLOCKED_PROTOCOLS.some(protocol => safeUrl.startsWith(protocol))) {
-                    // eslint-disable-next-line no-console
-                    console.error('Security: Blocked dangerous protocol in redirect URL:', safeUrl.split(':')[0]);
-                    routeBackInApp(history);
-                    return;
-                }
-
-                // Handle protocol-relative URLs
-                if (decodedUrl.startsWith('//')) {
-                    decodedUrl = `https:${decodedUrl}`;
-                }
-
-                // Add protocol if missing to ensure proper external navigation
-                if (!decodedUrl.startsWith('http://') && !decodedUrl.startsWith('https://')) {
-                    decodedUrl = `https://${decodedUrl}`;
-                }
-
-                // Validate domain whitelist (Open Redirect protection)
-                if (!isAllowedRedirectDomain(decodedUrl)) {
-                    // eslint-disable-next-line no-console
-                    console.error('Security: Blocked redirect to unauthorized domain');
-                    routeBackInApp(history);
-                    return;
-                }
-
-                window.location.href = decodedUrl;
-            } catch (error) {
-                // If any error occurs during validation, fall back to safe navigation
-                // eslint-disable-next-line no-console
-                console.error(
-                    'Security: Redirect validation error:',
-                    error instanceof Error ? error.message : 'Unknown error'
-                );
+            // Security: Final validation before redirect
+            if (isAllowedRedirectDomain(redirectUrlRef.current)) {
+                window.location.href = redirectUrlRef.current;
+            } else {
+                console.warn('Security: Blocked redirect attempt to unauthorized domain');
                 routeBackInApp(history);
             }
         } else {
@@ -138,8 +157,17 @@ const Reports = observer(({ history, location, routes }: TReports) => {
     };
 
     const handleRouteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        // Security: Sanitize the route value before using it
+        const newPath = sanitizeUrl(e.target.value);
+        
+        // Security: Validate that the new path is one of our allowed routes
+        const isValidRoute = routes.some(route => route.path === newPath);
+        if (!isValidRoute) {
+            console.warn('Security: Attempted navigation to unauthorized route');
+            return;
+        }
+
         // Preserve redirect parameter when changing routes
-        const newPath = e.target.value;
         if (redirectUrlRef.current) {
             const redirectParam = `?redirect=${encodeURIComponent(redirectUrlRef.current)}`;
             history.push(`${newPath}${redirectParam}`);

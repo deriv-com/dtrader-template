@@ -13,7 +13,10 @@
         "nth-check": "2.0.1",
         "typescript": "^5.0.0",
         "node-forge": "1.3.2",
-        "@semantic-release/npm": "^13.1.4"
+        "@semantic-release/npm": "^13.1.4",
+        "serialize-javascript": "^7.0.3",
+        "flatted": "^3.4.2",
+        "@tootallnate/once": "^3.0.1"
     },
     "devDependencies": {
         "@babel/core": "^7.25.2",
