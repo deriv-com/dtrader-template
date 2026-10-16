@@ -31,6 +31,7 @@
         "ip-address": "10.1.1",
         "follow-redirects": "1.16.0",
         "@babel/plugin-transform-modules-systemjs": "7.29.4",
+        "proxy-addr": "2.0.8",
         "ejs": {
             "minimatch": {
                 "brace-expansion": "5.0.12"
