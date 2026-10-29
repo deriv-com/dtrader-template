@@ -17,7 +17,7 @@
         "@semantic-release/npm": "^13.1.4",
         "flatted": "3.4.2",
         "@tootallnate/once": "^3.0.1",
-        "handlebars": "4.7.9",
+        "handlebars": "4.7.10",
         "lodash": "4.18.1",
         "lodash-es": "4.18.1",
         "picomatch": "4.0.4",
@@ -31,6 +31,7 @@
         "ip-address": "10.1.1",
         "follow-redirects": "1.16.0",
         "@babel/plugin-transform-modules-systemjs": "7.29.4",
+        "proxy-addr": "2.0.8",
         "ejs": {
             "minimatch": {
                 "brace-expansion": "5.0.12"
@@ -44,12 +45,12 @@
         },
         "semantic-release": {
             "conventional-changelog-writer": {
-                "handlebars": "4.7.9"
+                "handlebars": "4.7.10"
             }
         },
         "@semantic-release/release-notes-generator": {
             "conventional-changelog-writer": {
-                "handlebars": "4.7.9"
+                "handlebars": "4.7.10"
             }
         },
         "sass": {
