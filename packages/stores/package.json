@@ -5,7 +5,7 @@
     "main": "src/index.ts",
     "sideEffects": false,
     "engines": {
-        "node": "^22.14.0 || ^24.10.0"
+        "node": "^22.23.4 || ^24.22.1"
     },
     "dependencies": {
         "@deriv/api": "1.0.0",

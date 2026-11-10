@@ -14,7 +14,7 @@ A comprehensive TypeScript/React-based derivatives trading platform built with M
 **Main Tech Stack:** React 18, MobX 6, TypeScript 5, Webpack 5, Jest 29
 **Build System:** Webpack with separate configs per package
 **Architecture Pattern:** Multi-store reactive state management + component-driven UI
-**Node Version:** 24.x by default (use the repository `.nvmrc`); Node 22.14–22.x is also supported
+**Node Version:** 24.x by default (use the repository `.nvmrc`); Node 22.23.4+ (22.x) is also supported; minimum patched versions are 22.23.4 / 24.22.1 (CVE-2026-111497)
 
 ## Common Commands
 

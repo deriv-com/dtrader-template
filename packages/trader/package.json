@@ -11,7 +11,7 @@
         "test:eslint": "eslint \"./src/**/*.?(js|jsx|ts|tsx)\""
     },
     "engines": {
-        "node": "^22.14.0 || ^24.10.0"
+        "node": "^22.23.4 || ^24.22.1"
     },
     "repository": {
         "type": "git",
