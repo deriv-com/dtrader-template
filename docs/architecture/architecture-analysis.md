@@ -257,7 +257,7 @@ The application implements multi-layered error handling:
 The application uses a sophisticated build system to support the monorepo structure:
 
 - **npm workspaces**: Manages the monorepo packages and their interdependencies
-- **Node.js 22.14–22.x or 24.10–24.x**: Supported engine versions; Node.js 24 is the project default
+- **Node.js 22.23.4+ (22.x) or 24.22.1+ (24.x)**: Supported engine versions; Node.js 24 is the project default
 - **React 18**: UI library (overridden to 18.2.0 via package.json overrides)
 - **Webpack 5**: Handles code bundling, splitting, and optimization (configuration varies per package)
 - **Babel**: Transpiles modern JavaScript features with comprehensive plugin support including decorators, class properties, and optional chaining
