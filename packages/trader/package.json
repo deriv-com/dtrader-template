@@ -79,8 +79,8 @@
         "webpack-node-externals": "^2.5.2"
     },
     "dependencies": {
-        "@deriv-com/quill-tokens": "2.0.4",
-        "@deriv-com/quill-ui": "1.24.6",
+        "@deriv-com/quill-tokens": "2.0.32",
+        "@deriv-com/quill-ui": "1.24.13",
         "@deriv-com/smartcharts-champion": "^1.9.3",
         "@deriv-com/ui": "1.36.4",
         "@deriv-com/utils": "^0.0.42",
