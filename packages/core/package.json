@@ -88,8 +88,8 @@
     },
     "dependencies": {
         "core-js": "^3.47.0",
-        "@deriv-com/quill-tokens": "2.0.4",
-        "@deriv-com/quill-ui": "1.24.6",
+        "@deriv-com/quill-tokens": "2.0.32",
+        "@deriv-com/quill-ui": "1.24.13",
         "@deriv-com/translations": "1.4.0",
         "@deriv-com/ui": "1.36.4",
         "@deriv-com/utils": "^0.0.42",
